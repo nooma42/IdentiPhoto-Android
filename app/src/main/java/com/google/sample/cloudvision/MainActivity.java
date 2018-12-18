@@ -279,6 +279,12 @@ public class MainActivity extends AppCompatActivity {
         return annotateRequest;
     }
 
+    public void logout(View view) {
+        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
     private class LableDetectionTask extends AsyncTask<Object, Void, String> {
         private final WeakReference<MainActivity> mActivityWeakReference;
         private Vision.Images.Annotate mRequest;
@@ -379,7 +385,6 @@ public class MainActivity extends AppCompatActivity {
         final Button FinishButton = popupView.findViewById(R.id.FinishButton);
         FinishButton.setOnClickListener(v -> {
             // Code here executes on main thread after user presses button
-
             try {
                 saveImage();
             } catch (JSONException e) {
@@ -421,9 +426,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void saveImage() throws JSONException {
+
         RequestQueue queue = Volley.newRequestQueue(this);
         String url = "http://identiphoto.azurewebsites.net/api/Images";
-
+        Toast.makeText(getApplicationContext(), "meeeeeeee.", Toast.LENGTH_SHORT).show();
         String Data = preProcessData().toString();
 
         StringRequest request = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
