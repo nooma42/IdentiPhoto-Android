@@ -25,8 +25,8 @@
         android:layout_gravity="end"
         android:layout_marginEnd="15dp"
         android:focusable="true"
-        android:textColor="@android:color/white"
         android:focusableInTouchMode="true"
         android:hint="Weight"
-        android:inputType="numberDecimal" />
+        android:inputType="numberDecimal"
+        android:textColor="@android:color/white" />
 </RelativeLayout>

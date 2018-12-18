@@ -19,6 +19,9 @@ package com.google.sample.cloudvision;
 import android.Manifest;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -31,10 +34,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewGroupOverlay;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -42,6 +48,13 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.HttpTransport;
@@ -57,13 +70,20 @@ import com.google.api.services.vision.v1.model.EntityAnnotation;
 import com.google.api.services.vision.v1.model.Feature;
 import com.google.api.services.vision.v1.model.Image;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -87,7 +107,8 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView mRecyclerView;
     private LinearLayoutManager mLayoutManager;
     private DetailAdapter mAdapter;
-
+    private PopupWindow popupWindow = null;
+    public Bitmap bitmap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -173,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
         if (uri != null) {
             try {
                 // scale the image to save on bandwidth
-                Bitmap bitmap =
+                bitmap =
                         scaleBitmapDown(
                                 MediaStore.Images.Media.getBitmap(getContentResolver(), uri),
                                 MAX_DIMENSION);
@@ -280,14 +301,16 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "failed to make API request because of other IOException " +
                         e.getMessage());
             }
-            return "Cloud Vision API request failed. Check logs for details.";
+            return "0";
         }
 
         protected void onPostExecute(String result) {
+
+            if(result == "0")
+                return;
+
             MainActivity activity = mActivityWeakReference.get();
             if (activity != null && !activity.isFinishing()) {
-                TextView imageDetail = activity.findViewById(R.id.image_details);
-                imageDetail.setText(result);
                 showPopup();
             }
         }
@@ -350,15 +373,26 @@ public class MainActivity extends AppCompatActivity {
         View popupView = inflater.inflate(R.layout.details_popup, null);
 
 
+        ViewGroup root = (ViewGroup) getWindow().getDecorView().getRootView();
+        applyDim(root, 0.5f);
+
         final Button FinishButton = popupView.findViewById(R.id.FinishButton);
         FinishButton.setOnClickListener(v -> {
             // Code here executes on main thread after user presses button
-            Toast toast = Toast.makeText(getApplicationContext(), "Post data here!!", Toast.LENGTH_SHORT);
-            toast.show();
+
+            try {
+                saveImage();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
         });
 
         mRecyclerView = popupView.findViewById(R.id.Popup_list);
         mRecyclerView.setLayoutManager( new LinearLayoutManager(this));
+
+
+
 
         mAdapter = new DetailAdapter(popupView.getContext(), labels);
         mRecyclerView.setAdapter(mAdapter);
@@ -366,10 +400,114 @@ public class MainActivity extends AppCompatActivity {
         int width = LinearLayout.LayoutParams.WRAP_CONTENT;
 
         int height = LinearLayout.LayoutParams.WRAP_CONTENT;
-        boolean focusable = true; // lets taps outside the popup also dismiss it
-        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
+        boolean focusable = false; // lets taps outside the popup also dismiss it
+       popupWindow = new PopupWindow(popupView, width, height, focusable);
 
         popupWindow.showAtLocation(findViewById(android.R.id.content), Gravity.CENTER, 0, 0);
 
+    }
+    public static void applyDim(@NonNull ViewGroup parent, float dimAmount){
+        Drawable dim = new ColorDrawable(Color.BLACK);
+        dim.setBounds(0, 0, parent.getWidth(), parent.getHeight());
+        dim.setAlpha((int) (255 * dimAmount));
+
+        ViewGroupOverlay overlay = parent.getOverlay();
+        overlay.add(dim);
+    }
+
+    public static void clearDim(@NonNull ViewGroup parent) {
+        ViewGroupOverlay overlay = parent.getOverlay();
+        overlay.clear();
+    }
+
+    public void saveImage() throws JSONException {
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url = "http://identiphoto.azurewebsites.net/api/Images";
+
+        String Data = preProcessData().toString();
+
+        StringRequest request = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                if (!response.equals("Status:SUCCESS")) {
+                    ViewGroup root = (ViewGroup) getWindow().getDecorView().getRootView();
+                    resetVariables();
+                    clearDim(root);
+                    popupWindow.dismiss();
+                    Toast toast = Toast.makeText(getApplicationContext(), "Image uploaded successfully!", Toast.LENGTH_SHORT);
+                    toast.show();
+                } else {
+                    Log.e("Something has gone wrong!", "could not be saved... " + response);
+                    Toast toast = Toast.makeText(getApplicationContext(), "Image failed to upload! Please try again...", Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+            }
+
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("error is ", "" + error);
+            }
+        }) {
+
+            //This is for Headers
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/json; charset=UTF-8");
+                params.put("API_KEY", getResources().getString(R.string.API_KEY));
+                return params;
+            }
+
+            //Pass Params
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<String, String>();
+                return params;
+            }
+
+            @Override
+            public byte[] getBody() throws AuthFailureError {
+
+                byte[] body = new byte[0];
+                try {
+                    body = Data.getBytes("UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    Log.e(TAG, "Unable to gets bytes from JSON", e.fillInStackTrace());
+                }
+                return body;
+            }
+        };
+        queue.add(request);
+    }
+
+    private void resetVariables() {
+        mMainImage.setImageResource(android.R.color.transparent);
+        mImageDetails.setText(R.string.intro_message);
+    }
+
+    private JSONObject preProcessData() throws JSONException {
+        JSONObject JSONData = new JSONObject();
+        JSONData.put("photographer_ID", "1");
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] byteArray = stream.toByteArray();
+        String imageData = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+        JSONData.put("image_data", imageData);
+
+        JSONArray JSONDetails = new JSONArray();
+        for(int i = 0; i < mRecyclerView.getChildCount(); i++) {
+            JSONObject singleDetail = new JSONObject();
+            DetailAdapter.ViewHolder holder = (DetailAdapter.ViewHolder) mRecyclerView.findViewHolderForAdapterPosition(i);
+           String identifier = holder.descriptionText.getText().toString();
+           String weighting = holder.weightValue.getText().toString();
+           singleDetail.put("identifier", identifier);
+           singleDetail.put("weighting", weighting);
+           JSONDetails.put(singleDetail);
+        }
+        JSONData.put("image_details", JSONDetails);
+        return JSONData;
     }
 }
