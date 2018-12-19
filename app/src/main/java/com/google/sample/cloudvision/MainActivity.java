@@ -511,6 +511,10 @@ public class MainActivity extends AppCompatActivity {
         for(int i = 0; i < mRecyclerView.getChildCount(); i++) {
             JSONObject singleDetail = new JSONObject();
             DetailAdapter.ViewHolder holder = (DetailAdapter.ViewHolder) mRecyclerView.findViewHolderForAdapterPosition(i);
+            if(holder == null)
+            {
+                continue;
+            }
            String identifier = holder.descriptionText.getText().toString();
            String weighting = holder.weightValue.getText().toString();
            singleDetail.put("identifier", identifier);
