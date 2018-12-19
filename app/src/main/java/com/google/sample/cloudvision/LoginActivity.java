@@ -56,7 +56,7 @@ public class LoginActivity extends AppCompatActivity {
 
     public void checkLogin() throws JSONException {
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "http://identiphoto.azurewebsites.net/api/AuthenticatePhotographer";
+        String url = "https://identiphoto.azurewebsites.net/api/AuthenticatePhotographer";
 
         String Data = preProcessData().toString();
 

@@ -200,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
                                 MAX_DIMENSION);
 
                 callCloudVision(bitmap);
-                mMainImage.setImageBitmap(bitmap);
+                mMainImage.setImageBitmap(MediaStore.Images.Media.getBitmap(getContentResolver(), uri));
 
             } catch (IOException e) {
                 Log.d(TAG, "Image picking failed because " + e.getMessage());
@@ -407,7 +407,8 @@ public class MainActivity extends AppCompatActivity {
         int height = LinearLayout.LayoutParams.WRAP_CONTENT;
         boolean focusable = false; // lets taps outside the popup also dismiss it
        popupWindow = new PopupWindow(popupView, width, height, focusable);
-
+        popupWindow.setElevation(10);
+        popupWindow.setAnimationStyle(R.style.Animation);
         popupWindow.showAtLocation(findViewById(android.R.id.content), Gravity.CENTER, 0, 0);
 
     }
@@ -428,8 +429,7 @@ public class MainActivity extends AppCompatActivity {
     public void saveImage() throws JSONException {
 
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "http://identiphoto.azurewebsites.net/api/Images";
-        Toast.makeText(getApplicationContext(), "meeeeeeee.", Toast.LENGTH_SHORT).show();
+        String url = "https://identiphoto.azurewebsites.net/api/Images";
         String Data = preProcessData().toString();
 
         StringRequest request = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {

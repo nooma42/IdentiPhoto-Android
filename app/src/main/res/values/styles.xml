@@ -26,5 +26,8 @@
         <item name="colorControlNormal">#000</item>
         <item name="colorControlActivated">#000</item>
     </style>
-
+    <style name="Animation">
+        <item name="android:windowEnterAnimation">@anim/popup_anim</item>
+        <item name="android:windowExitAnimation">@anim/popup_anim</item>
+    </style>
 </resources>

@@ -2,15 +2,21 @@ package com.google.sample.cloudvision;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.api.services.vision.v1.model.EntityAnnotation;
 
 import java.util.List;
+
+import static java.lang.Math.ceil;
 
 public class DetailAdapter extends RecyclerView.Adapter<DetailAdapter.ViewHolder> {
 
@@ -38,6 +44,18 @@ public class DetailAdapter extends RecyclerView.Adapter<DetailAdapter.ViewHolder
         Float weight = mData.get(position).getScore();
         holder.descriptionText.setText(description);
         holder.weightValue.setText(String.format("%.02f", weight));
+
+
+        holder.removeButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                double pos = position;
+                mData.remove(holder.getAdapterPosition());
+                notifyItemRemoved(holder.getAdapterPosition());
+                Log.e("finna","IM FINNA DELETE AT " + (holder.getAdapterPosition()));
+            }
+        });
     }
 
     // total number of rows
@@ -50,6 +68,7 @@ public class DetailAdapter extends RecyclerView.Adapter<DetailAdapter.ViewHolder
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView descriptionText;
         EditText weightValue;
+        ImageView removeButton;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -57,6 +76,7 @@ public class DetailAdapter extends RecyclerView.Adapter<DetailAdapter.ViewHolder
 
             descriptionText = itemView.findViewById(R.id.Detail_description);
             weightValue = itemView.findViewById(R.id.Detail_weight);
+            removeButton = itemView.findViewById(R.id.Detail_remove);
         }
 
         @Override
