@@ -396,21 +396,27 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView = popupView.findViewById(R.id.Popup_list);
         mRecyclerView.setLayoutManager( new LinearLayoutManager(this));
 
-
-
-
         mAdapter = new DetailAdapter(popupView.getContext(), labels);
         mRecyclerView.setAdapter(mAdapter);
 
         int width = LinearLayout.LayoutParams.WRAP_CONTENT;
 
         int height = LinearLayout.LayoutParams.WRAP_CONTENT;
-        boolean focusable = false; // lets taps outside the popup also dismiss it
+        boolean focusable = true; // lets taps outside the popup also dismiss it
        popupWindow = new PopupWindow(popupView, width, height, focusable);
         popupWindow.setElevation(10);
         popupWindow.setAnimationStyle(R.style.Animation);
         popupWindow.showAtLocation(findViewById(android.R.id.content), Gravity.CENTER, 0, 0);
 
+        popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+
+            @Override
+            public void onDismiss() {
+                resetVariables();
+                clearDim(root);
+
+            }
+        });
     }
     public static void applyDim(@NonNull ViewGroup parent, float dimAmount){
         Drawable dim = new ColorDrawable(Color.BLACK);
@@ -437,8 +443,6 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(String response) {
                 if (!response.equals("Status:SUCCESS")) {
                     ViewGroup root = (ViewGroup) getWindow().getDecorView().getRootView();
-                    resetVariables();
-                    clearDim(root);
                     popupWindow.dismiss();
                     Toast toast = Toast.makeText(getApplicationContext(), "Image uploaded successfully!", Toast.LENGTH_SHORT);
                     toast.show();

@@ -2,6 +2,8 @@ package com.google.sample.cloudvision;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -72,16 +74,35 @@ public class DetailAdapter extends RecyclerView.Adapter<DetailAdapter.ViewHolder
 
         ViewHolder(View itemView) {
             super(itemView);
-            itemView.setOnClickListener(this);
+            //itemView.setOnClickListener(this);
 
             descriptionText = itemView.findViewById(R.id.Detail_description);
             weightValue = itemView.findViewById(R.id.Detail_weight);
             removeButton = itemView.findViewById(R.id.Detail_remove);
+
+            weightValue.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                    mData.get(getAdapterPosition()).setConfidence(Float.valueOf(weightValue.getText().toString()));
+                }
+
+                @Override
+                public void afterTextChanged(Editable editable) {
+
+                }
+            });
+
         }
 
         @Override
         public void onClick(View view) {
-            if (mClickListener != null) mClickListener.onItemClick(view, getAdapterPosition());
+
         }
     }
 

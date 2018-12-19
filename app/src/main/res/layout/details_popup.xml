@@ -7,6 +7,7 @@
     android:layout_height="300sp"
     android:background="#0450ec">
 
+
     <TextView
         android:id="@+id/Popup_text"
         android:layout_width="wrap_content"
@@ -14,21 +15,36 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:textColor="@android:color/white"
-        android:text="The following were found:"
+        android:text="The following were found"
         android:padding="10dp"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/Popup_list"
         android:layout_width="wrap_content"
         android:layout_below="@+id/Popup_text"
-        android:layout_height="wrap_content"/>
-
+        android:background="@android:color/white"
+        android:scrollbars="vertical"
+        android:layout_height="200sp"/>
+    <View
+        android:layout_width="wrap_content"
+        android:layout_height="1dp"
+        android:layout_above="@id/Popup_list"
+        android:background="@android:color/darker_gray"/>
+    <View
+        android:layout_width="wrap_content"
+        android:layout_height="1dp"
+        android:layout_below="@id/Popup_list"
+        android:background="@android:color/darker_gray"/>
     <Button
         android:id="@+id/FinishButton"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_centerInParent="true"
         android:layout_height="wrap_content"
         android:layout_below="@+id/Popup_list"
+        android:layout_marginLeft="-4dip"
+        android:layout_marginRight="-4dip"
+        android:layout_marginTop="-4dip"
+        android:layout_marginBottom="-4dip"
         android:text="Finish" />
 
 
