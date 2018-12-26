@@ -17,6 +17,7 @@
 package com.google.sample.cloudvision;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -28,6 +29,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -120,11 +122,19 @@ public class MainActivity extends AppCompatActivity {
         Button selectButton = findViewById(R.id.selectButton);
         selectButton.setOnClickListener(view -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+
+            builder.setOnDismissListener(dialog -> {
+                selectButton.setBackgroundColor(Color.parseColor("#D6D8D5"));
+                selectButton.setEnabled(true);
+            });
+
             builder
                     .setMessage(R.string.dialog_select_prompt)
                     .setPositiveButton(R.string.dialog_select_gallery, (dialog, which) -> startGalleryChooser())
                     .setNegativeButton(R.string.dialog_select_camera, (dialog, which) -> startCamera());
             builder.create().show();
+
+
         });
 
         mImageDetails = findViewById(R.id.image_details);
@@ -165,6 +175,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == GALLERY_IMAGE_REQUEST && resultCode == RESULT_OK && data != null) {
+
             uploadImage(data.getData());
         } else if (requestCode == CAMERA_IMAGE_REQUEST && resultCode == RESULT_OK) {
             Uri photoUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", getCameraFile());
@@ -205,10 +216,16 @@ public class MainActivity extends AppCompatActivity {
             } catch (IOException e) {
                 Log.d(TAG, "Image picking failed because " + e.getMessage());
                 Toast.makeText(this, R.string.image_picker_error, Toast.LENGTH_LONG).show();
+                Button selectButton = findViewById(R.id.selectButton);
+                selectButton.setBackgroundColor(Color.parseColor("#D6D8D5"));
+                selectButton.setEnabled(true);
             }
         } else {
             Log.d(TAG, "Image picker gave us a null image.");
             Toast.makeText(this, R.string.image_picker_error, Toast.LENGTH_LONG).show();
+            Button selectButton = findViewById(R.id.selectButton);
+            selectButton.setBackgroundColor(Color.parseColor("#D6D8D5"));
+            selectButton.setEnabled(true);
         }
     }
 
@@ -302,10 +319,16 @@ public class MainActivity extends AppCompatActivity {
                 return convertResponseToString(response);
 
             } catch (GoogleJsonResponseException e) {
+                Button selectButton = findViewById(R.id.selectButton);
                 Log.d(TAG, "failed to make API request because " + e.getContent());
+                selectButton.setBackgroundColor(Color.parseColor("#D6D8D5"));
+                selectButton.setEnabled(true);
             } catch (IOException e) {
+                Button selectButton = findViewById(R.id.selectButton);
                 Log.d(TAG, "failed to make API request because of other IOException " +
                         e.getMessage());
+                selectButton.setBackgroundColor(Color.parseColor("#D6D8D5"));
+                selectButton.setEnabled(true);
             }
             return "0";
         }
@@ -317,6 +340,9 @@ public class MainActivity extends AppCompatActivity {
 
             MainActivity activity = mActivityWeakReference.get();
             if (activity != null && !activity.isFinishing()) {
+                Button selectButton = findViewById(R.id.selectButton);
+                selectButton.setBackgroundColor(Color.parseColor("#D6D8D5"));
+                selectButton.setEnabled(true);
                 showPopup();
             }
         }
@@ -325,7 +351,9 @@ public class MainActivity extends AppCompatActivity {
     private void callCloudVision(final Bitmap bitmap) {
         // Switch text to loading
         mImageDetails.setText(R.string.loading_message);
-
+        Button selectButton = findViewById(R.id.selectButton);
+        selectButton.setBackgroundColor(Color.parseColor("#A9A9A9"));
+        selectButton.setEnabled(false);
         // Do the real work in an async task, because we need to use the network anyway
         try {
             AsyncTask<Object, Void, String> labelDetectionTask = new LableDetectionTask(this, prepareAnnotationRequest(bitmap));
@@ -386,9 +414,13 @@ public class MainActivity extends AppCompatActivity {
         FinishButton.setOnClickListener(v -> {
             // Code here executes on main thread after user presses button
             try {
+                FinishButton.setEnabled(false);
+                FinishButton.setBackgroundColor(Color.parseColor("#A9A9A9"));
                 saveImage();
             } catch (JSONException e) {
                 e.printStackTrace();
+                FinishButton.setBackgroundColor(Color.parseColor("#D6D8D5"));
+                FinishButton.setEnabled(true);
             }
 
         });
@@ -441,7 +473,7 @@ public class MainActivity extends AppCompatActivity {
         StringRequest request = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                if (!response.equals("Status:SUCCESS")) {
+                if (response.equals("\"Status:SUCCESS\"")) {
                     ViewGroup root = (ViewGroup) getWindow().getDecorView().getRootView();
                     popupWindow.dismiss();
                     Toast toast = Toast.makeText(getApplicationContext(), "Image uploaded successfully!", Toast.LENGTH_SHORT);
@@ -450,6 +482,9 @@ public class MainActivity extends AppCompatActivity {
                     Log.e("Something has gone wrong!", "could not be saved... " + response);
                     Toast toast = Toast.makeText(getApplicationContext(), "Image failed to upload! Please try again...", Toast.LENGTH_SHORT);
                     toast.show();
+                    final Button FinishButton = findViewById(R.id.FinishButton);
+                    FinishButton.setBackgroundColor(Color.parseColor("#D6D8D5"));
+                    FinishButton.setEnabled(true);
                 }
             }
 

@@ -1,7 +1,9 @@
 package com.google.sample.cloudvision;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -42,6 +44,9 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void login(View view) throws JSONException {
+        Button loginBtn = findViewById(R.id.loginBtn);
+        loginBtn.setEnabled(false);
+        loginBtn.setBackgroundColor(Color.BLACK);
         EditText usernameInput = findViewById(R.id.input_id);
         username = usernameInput.getEditableText().toString().toUpperCase();
         EditText passwordInput = findViewById(R.id.input_pw);
@@ -50,6 +55,8 @@ public class LoginActivity extends AppCompatActivity {
             checkLogin();
         else
         {
+            loginBtn.setEnabled(true);
+            loginBtn.setBackgroundColor(ContextCompat.getColor(this, R.color.colorPrimary));
             Toast.makeText(getBaseContext(), "username or password is empty!", Toast.LENGTH_LONG).show();
         }
     }
@@ -59,6 +66,7 @@ public class LoginActivity extends AppCompatActivity {
         String url = "https://identiphoto.azurewebsites.net/api/AuthenticatePhotographer";
 
         String Data = preProcessData().toString();
+        Button loginBtn = findViewById(R.id.loginBtn);
 
         StringRequest request = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
@@ -73,6 +81,8 @@ public class LoginActivity extends AppCompatActivity {
                     Log.e("Something has gone wrong!", "could not be saved... " + response);
                     Toast toast = Toast.makeText(getApplicationContext(), "Login Failed! Please try again.", Toast.LENGTH_SHORT);
                     toast.show();
+                    loginBtn.setEnabled(true);
+                    loginBtn.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.colorPrimary));
                 }
             }
 
