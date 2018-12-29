@@ -491,7 +491,9 @@ public class MainActivity extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e("error is ", "" + error);
+                Toast toast = Toast.makeText(getApplicationContext(), "Error occured uploading image. Please try again!", Toast.LENGTH_SHORT);
+                toast.show();
+                popupWindow.dismiss();
             }
         }) {
 
