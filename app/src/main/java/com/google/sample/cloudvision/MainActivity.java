@@ -111,9 +111,11 @@ public class MainActivity extends AppCompatActivity {
     private DetailAdapter mAdapter;
     private PopupWindow popupWindow = null;
     public Bitmap bitmap;
-
+    public String photographer_ID;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Bundle bundle = getIntent().getExtras();
+        photographer_ID = bundle.getString("photographer_ID");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -535,7 +537,7 @@ public class MainActivity extends AppCompatActivity {
 
     private JSONObject preProcessData() throws JSONException {
         JSONObject JSONData = new JSONObject();
-        JSONData.put("photographer_ID", "1");
+        JSONData.put("photographer_ID", photographer_ID);
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
@@ -545,15 +547,14 @@ public class MainActivity extends AppCompatActivity {
         JSONData.put("image_data", imageData);
 
         JSONArray JSONDetails = new JSONArray();
-        for(int i = 0; i < mRecyclerView.getChildCount(); i++) {
+        for(int i = 0; i < mRecyclerView.getAdapter().getItemCount(); i++) {
             JSONObject singleDetail = new JSONObject();
             DetailAdapter.ViewHolder holder = (DetailAdapter.ViewHolder) mRecyclerView.findViewHolderForAdapterPosition(i);
-            if(holder == null)
-            {
-                continue;
-            }
-           String identifier = holder.descriptionText.getText().toString();
-           String weighting = holder.weightValue.getText().toString();
+            EntityAnnotation obj =((DetailAdapter) mRecyclerView.getAdapter()).getItem(i);
+
+           String identifier = obj.getDescription();
+           String weighting = String.format("%.02f", obj.getConfidence());
+
            singleDetail.put("identifier", identifier);
            singleDetail.put("weighting", weighting);
            JSONDetails.put(singleDetail);

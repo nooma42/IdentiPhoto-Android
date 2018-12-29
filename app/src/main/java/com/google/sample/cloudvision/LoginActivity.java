@@ -71,10 +71,13 @@ public class LoginActivity extends AppCompatActivity {
         StringRequest request = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                if (response.equals("\"STATUS:GRANTED\"")) {
+                if (response.contains("STATUS:GRANTED")) {
+                    String[] split = response.split(":");
                     Toast toast = Toast.makeText(getApplicationContext(), "Login Successful!", Toast.LENGTH_SHORT);
                     toast.show();
                     Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                    split[2] = split[2].substring(0, split[2].length() - 1);
+                    intent.putExtra("photographer_ID", split[2]);
                     startActivity(intent);
                     finish();
                 } else {

@@ -9,16 +9,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.api.services.vision.v1.model.EntityAnnotation;
 
 import java.util.List;
-
-import static java.lang.Math.ceil;
 
 public class DetailAdapter extends RecyclerView.Adapter<DetailAdapter.ViewHolder> {
 
@@ -107,9 +103,8 @@ public class DetailAdapter extends RecyclerView.Adapter<DetailAdapter.ViewHolder
     }
 
     // convenience method for getting data at click position
-    String getItem(int id) {
-       //return mData.get(id);
-        return "0";
+    EntityAnnotation getItem(int id) {
+        return this.mData.get(id);
 }
 
     // allows clicks events to be caught
