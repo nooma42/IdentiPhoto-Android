@@ -540,7 +540,7 @@ public class MainActivity extends AppCompatActivity {
         JSONData.put("photographer_ID", photographer_ID);
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
         byte[] byteArray = stream.toByteArray();
         String imageData = Base64.encodeToString(byteArray, Base64.DEFAULT);
 
